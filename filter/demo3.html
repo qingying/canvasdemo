@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+
+</head>
+<body>
+<canvas class="container">
+
+</canvas>
+<canvas id="canvas2">
+
+</canvas>
+<script src="jquery.js"></script>
+<script src="caman.js"></script>
+<script>
+    var body = document.body;
+    var rFilter = /^image\/(?:bmp|cis\-cod|gif|ief|jpeg|pipeg|png|svg\+xml|tiff|x\-cmu\-raster|x\-cmx|x\-icon|x\-portable\-anymap|x\-portable\-bitmap|x\-portable\-graymap|x\-portable\-pixmap|x\-rgb|x\-xbitmap|x\-xpixmap|x\-xwindowdump)$/i;
+    body.ondragover = function (ev) {
+        ev.preventDefault();
+    }
+    body.ondrop = function (ev) {
+        var files = ev.dataTransfer.files;
+        if (files.length == 0) {
+            return;
+        }
+        var file = files[files.length - 1];
+        checkFile(file);
+        return false;
+    }
+    var img;
+
+    function checkFile(file) {
+        var reader = new FileReader();
+        if (!rFilter.test(file.type)) {
+            alert('please insert a image!');
+        }
+        reader.readAsDataURL(file);
+        reader.onload = function (ev) {
+            var ret = ev.target.result;
+            img = new Image();
+            img.src = ret;
+            img.addEventListener('load', draw, false);
+            img.addEventListener('error', function(){
+                console.log('error')
+            }, false);
+        }
+    }
+
+    function draw(ev) {
+        var img = ev.target;
+        var canvas = document.querySelectorAll('.container')[0];
+        canvas.width = img.width;
+        canvas.height = img.height;
+        var ctx = canvas.getContext('2d');
+        ctx.beginPath();
+
+        ctx.drawImage(img, 0, 0);
+
+        ctx.rotate(Math.PI*0.25);
+        ctx.font = "100px Times New Roman";
+        ctx.fillStyle = "rgba(255,0,0,0.3)";
+        ctx.fillText("青缨", 100, 100);
+
+        var newimg  = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+        window.location.href=newimg
+    }
+
+    function changeEffect(effect) {
+            var canvas = document.querySelectorAll('.container')[0];
+            var context = canvas.getContext('2d');
+            var imgData = context.getImageData(0, 0, canvas.width, canvas.height);
+            var clone = canvas.cloneNode(true);
+            clone.getContext('2d').drawImage(img, 0, 0);
+            Caman(clone, function () {
+
+            			// If such an effect exists, use it:
+            			if( effect in this){
+            				this[effect]();
+            				this.render();
+                            document.body.appendChild(clone);
+            			}
+            			else{
+
+            			}
+            		});
+        }
+
+    function reset() {
+        var canvas = document.querySelectorAll('.container')[0];
+        var context = canvas.getContext('2d');
+        context.drawImage(img, 0, 0);
+    }
+
+
+
+</script>
+</body>
+</html>
