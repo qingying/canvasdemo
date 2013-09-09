@@ -9,16 +9,52 @@
             height: 100%;
             width: 100%;
         }
+        .picBtn {
+            -webkit-appearaence: none
+        }
+        .tip {
+            width: 200px;
+            height:200px;
+            position:absolute;
+            left:50%;
+            top:50px;
+            margin-left: -100px;
+            z-index:-1;
+        }
+        .container {
+            margin: 50px auto;
+        }
     </style>
-
 </head>
 <body>
-<canvas class="container">
+<div class="tip">拖拽一张图片到这里来</div>
+<div class="container">
+    
+</div>
+<a id="downloadBtn" href="#" download="photo.png">下载到本地</a>
+<p>请选择效果</p>
+<ul id="filters">
+        <li id="normal" class="active">Normal</li>
+        <li id="vintage">Vintage</li>
+        <li id="lomo">Lomo</li>
+        <li id="clarity">Clarity</li>
+        <li id="sinCity">Sin City</li>
+        <li id="sunrise">Sunrise</li>
+        <li id="crossProcess">Cross Process</li>
+        <li id="orangePeel">Orange Peel</li>
+        <li id="love">Love</li>
+        <li id="grungy">Grungy</li>
+        <li id="jarques">Jarques</li>
+        <li id="pinhole">Pinhole</li>
+        <li id="oldBoot">Old Boot</li>
+        <li id="glowingSun">Glowing Sun</li>
+        <li id="hazyDays">Hazy Days</li>
+        <li id="herMajesty">Her Majesty</li>
+        <li id="nostalgia">Nostalgia</li>
+        <li id="hemingway">Hemingway</li>
+        <li id="concentrate">Concentrate</li>
+    </ul>
 
-</canvas>
-<canvas id="canvas2">
-
-</canvas>
 <script src="jquery.js"></script>
 <script src="caman.js"></script>
 <script>
@@ -48,59 +84,80 @@
             var ret = ev.target.result;
             img = new Image();
             img.src = ret;
-            img.addEventListener('load', draw, false);
+            img.addEventListener('load', dragimgload, false);
             img.addEventListener('error', function(){
                 console.log('error')
             }, false);
         }
     }
-
-    function draw(ev) {
+    var container = document.querySelectorAll('.container')[0];
+    function dragimgload(ev){
         var img = ev.target;
-        var canvas = document.querySelectorAll('.container')[0];
+        draw(img);
+    }
+    function draw(img) {
+        container.innerHTML = '';
+        var canvas = document.createElement('canvas'); 
         canvas.width = img.width;
         canvas.height = img.height;
         var ctx = canvas.getContext('2d');
         ctx.beginPath();
 
-        ctx.drawImage(img, 0, 0);
-
-        ctx.rotate(Math.PI*0.25);
-        ctx.font = "100px Times New Roman";
-        ctx.fillStyle = "rgba(255,0,0,0.3)";
-        ctx.fillText("青缨", 100, 100);
-
-        var newimg  = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
-        window.location.href=newimg
+        ctx.drawImage(img, 0, 0);  
+        container.appendChild(canvas);
+       
     }
 
     function changeEffect(effect) {
-            var canvas = document.querySelectorAll('.container')[0];
+            var canvas = document.querySelectorAll('.container')[0].querySelectorAll('canvas')[0];
             var context = canvas.getContext('2d');
             var imgData = context.getImageData(0, 0, canvas.width, canvas.height);
             var clone = canvas.cloneNode(true);
+            clone.className=effect;
             clone.getContext('2d').drawImage(img, 0, 0);
             Caman(clone, function () {
+            	// If such an effect exists, use it:
+            	if( effect in this){
+            		this[effect]();
+            		this.render();
+                    container.innerHTML = '';
+                    container.appendChild(clone);
+            	}
+            	else{
 
-            			// If such an effect exists, use it:
-            			if( effect in this){
-            				this[effect]();
-            				this.render();
-                            document.body.appendChild(clone);
-            			}
-            			else{
-
-            			}
-            		});
+            	}
+            });
         }
 
+    function addName(text,position,style){
+        var ctx = document.querySelectorAll('.container')[0].getContext('2d');
+        ctx.rotate(Math.PI*0.25);
+        ctx.font = "100px Times New Roman";
+        ctx.fillStyle = style;
+        ctx.fillText(text, position.left, position.top);
+    }
+    function downloadLastImg(){
+        var canvas = document.querySelectorAll('.container')[0];
+        var newimg  = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+        document.querySelectorAll('#downloadBtn')[0].href=newimg;
+    }
     function reset() {
         var canvas = document.querySelectorAll('.container')[0];
         var context = canvas.getContext('2d');
         context.drawImage(img, 0, 0);
     }
 
-
+document.querySelectorAll('#filters')[0].addEventListener('click',function(ev){
+    if(ev.target.tagName=='LI'){
+        var target = ev.target;
+        var type = target.id;
+        if(type=='normal'){
+            
+            return;
+        }
+        changeEffect(type);
+    }
+},false)
 
 </script>
 </body>
